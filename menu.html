@@ -9,83 +9,37 @@
 <body>
     <!-- Header Section -->
     <header>
-        <!-- Logo -->
         <img src="images/Delight.png" alt="Delight Dining Logo" class="logo">
-        <!-- Navigation Bar -->
         <nav class="navbar">
             <ul>
                 <li><a href="index.html">Home</a></li>
                 <li><a href="menu.html" class="active">Menu</a></li>
-                <li><a href="#reservations">Reservations</a></li>
-                <li><a href="#catering">Catering</a></li>
+                <li><a href="reservations.html">Reservations</a></li>
+                <li><a href="catering.html">Catering</a></li>
             </ul>
         </nav>
     </header>
 
     <!-- Main Section -->
     <main>
-        <!-- Menu Section -->
         <section class="menu">
             <h1>Our Menu</h1>
             <p>Explore our wide variety of delicious offerings, crafted with the freshest ingredients.</p>
-
-            <!-- Menu Categories -->
-            <div class="menu-categories">
-                <button onclick="filterMenu('all')">All</button>
-                <button onclick="filterMenu('starters')">Starters</button>
-                <button onclick="filterMenu('mains')">Main Courses</button>
-                <button onclick="filterMenu('desserts')">Desserts</button>
-                <button onclick="filterMenu('drinks')">Drinks</button>
-            </div>
-
-            <!-- Menu Items -->
             <div class="menu-items">
-                <!-- Starters -->
-                <div class="menu-item starters">
-                    <h2>Garlic Bread</h2>
-                    <p>Warm, buttery bread with a hint of garlic.</p>
-                    <span>$5.99</span>
-                </div>
-                <div class="menu-item starters">
-                    <h2>Bruschetta</h2>
-                    <p>Fresh tomato, basil, and garlic on toasted bread.</p>
-                    <span>$7.99</span>
-                </div>
-
-                <!-- Main Courses -->
-                <div class="menu-item mains">
+                <div class="menu-item">
                     <h2>Margherita Pizza</h2>
                     <p>Classic pizza topped with tomato, mozzarella, and basil.</p>
                     <span>$12.99</span>
                 </div>
-                <div class="menu-item mains">
+                <div class="menu-item">
                     <h2>Spaghetti Carbonara</h2>
                     <p>Traditional Italian pasta with eggs, cheese, and pancetta.</p>
                     <span>$14.99</span>
                 </div>
-
-                <!-- Desserts -->
-                <div class="menu-item desserts">
-                    <h2>Tiramisu</h2>
-                    <p>Classic coffee-flavored Italian dessert.</p>
-                    <span>$6.99</span>
-                </div>
-                <div class="menu-item desserts">
+                <div class="menu-item">
                     <h2>Chocolate Lava Cake</h2>
                     <p>Warm chocolate cake with a gooey center.</p>
                     <span>$8.99</span>
-                </div>
-
-                <!-- Drinks -->
-                <div class="menu-item drinks">
-                    <h2>Mango Smoothie</h2>
-                    <p>Refreshing blend of mango and yogurt.</p>
-                    <span>$4.99</span>
-                </div>
-                <div class="menu-item drinks">
-                    <h2>Espresso</h2>
-                    <p>Strong and bold shot of espresso.</p>
-                    <span>$2.99</span>
                 </div>
             </div>
         </section>
@@ -95,24 +49,5 @@
     <footer>
         <p>&copy; 2024 Delight Dining. All rights reserved.</p>
     </footer>
-
-    <!-- JavaScript for Filtering -->
-    <script>
-        function filterMenu(category) {
-            const items = document.querySelectorAll('.menu-item');
-
-            items.forEach(item => {
-                if (category === 'all') {
-                    item.style.display = 'block';
-                } else {
-                    if (item.classList.contains(category)) {
-                        item.style.display = 'block';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                }
-            });
-        }
-    </script>
 </body>
 </html>
