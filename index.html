@@ -7,34 +7,48 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Header Section -->
     <header>
-        <!-- Logo Section -->
+        <!-- Logo -->
         <img src="images/Delight.png" alt="Delight Dining Logo" class="logo">
+        <!-- Navigation Bar -->
         <nav class="navbar">
             <ul>
-                <li><a href="#menu">Menu</a></li>
-                <li><a href="#order-now">Order Now</a></li>
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="menu.html">Menu</a></li>
                 <li><a href="#reservations">Reservations</a></li>
                 <li><a href="#catering">Catering</a></li>
             </ul>
         </nav>
     </header>
+
+    <!-- Main Section -->
     <main>
+        <!-- Hero Section -->
+        <section id="hero">
+            <h1>Welcome to Delight Dining</h1>
+            <p>Where delicious meals meet convenience and style!</p>
+        </section>
+
+        <!-- Order Type Section -->
         <section class="order-type">
             <h1>Select Order Type</h1>
             <div class="order-options">
+                <!-- To Go Option -->
                 <div class="option">
                     <img src="images/to-go.png" alt="To Go">
                     <h2>To Go</h2>
                     <p>Order your favorites, from individual entrées to family-style meals.</p>
                     <button>Order To Go</button>
                 </div>
+                <!-- Catering Pickup Option -->
                 <div class="option">
                     <img src="images/catering-pickup.png" alt="Catering Pickup">
                     <h2>Catering Pickup</h2>
                     <p>Perfect for any occasion or event.</p>
                     <button>Order Catering Pickup</button>
                 </div>
+                <!-- Catering Delivery Option -->
                 <div class="option">
                     <img src="images/catering-delivery.png" alt="Catering Delivery">
                     <h2>Catering Delivery</h2>
@@ -43,9 +57,39 @@
                 </div>
             </div>
         </section>
+
+        <!-- Reservations Section -->
+        <section id="reservations" class="reservations">
+            <h1>Reserve Your Table</h1>
+            <form>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required>
+
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date" required>
+
+                <label for="time">Time:</label>
+                <input type="time" id="time" name="time" required>
+
+                <label for="guests">Number of Guests:</label>
+                <input type="number" id="guests" name="guests" min="1" required>
+
+                <button type="submit">Reserve Now</button>
+            </form>
+        </section>
+
+        <!-- Catering Section -->
+        <section id="catering" class="catering">
+            <h1>Catering Services</h1>
+            <p>Perfect for parties, corporate events, or any special occasion. Let us handle the food while you enjoy your event!</p>
+            <button>Learn More</button>
+        </section>
     </main>
+
+    <!-- Footer -->
     <footer>
         <p>&copy; 2024 Delight Dining. All rights reserved.</p>
     </footer>
 </body>
 </html>
+
