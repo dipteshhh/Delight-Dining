@@ -1,0 +1,112 @@
+/* General Reset */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2; /* Light gray */
+    color: #333; /* Dark gray for text */
+}
+
+/* Logo */
+header .logo {
+    display: block;
+    margin: 20px auto;
+    max-width: 150px; /* Adjust the size of the logo */
+    height: auto; /* Maintain aspect ratio */
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    justify-content: center;
+    background-color: #333; /* Match dark tone from the logo */
+    padding: 10px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.navbar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 20px;
+}
+
+.navbar ul li {
+    display: inline;
+}
+
+.navbar ul li a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* Order Type Section */
+.order-type {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.order-type h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.order-options {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.option {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    padding: 20px;
+    text-align: center;
+}
+
+.option img {
+    width: 150px;
+    margin-bottom: 15px;
+}
+
+.option h2 {
+    color: #5d4037;
+    margin-bottom: 10px;
+}
+
+.option p {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.option button {
+    background-color: #333; /* Dark gray for buttons */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.option button:hover {
+    background-color: #555; /* Slightly lighter on hover */
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #333; /* Match dark tone from the logo */
+    color: white;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
