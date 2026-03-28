@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { getDemoOrders, saveDemoOrders } from '../lib/demoStore'
 import type { Order, OrderInsert, OrderItemInsert, CartItem } from '../types'
 
 export function useOrders() {
@@ -14,6 +15,7 @@ export function useOrders() {
         status: 'pending',
         created_at: new Date().toISOString(),
       }
+      saveDemoOrders([fakeOrder, ...getDemoOrders()])
       return { data: fakeOrder, error: null }
     }
 
@@ -65,23 +67,48 @@ export function useAdminOrders() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
+
+    if (!isSupabaseConfigured) {
+      setOrders(getDemoOrders())
+      setLoading(false)
+      return
+    }
+
+    const { data, error } = await supabase
       .from('orders')
       .select('*, order_items(*)')
       .order('created_at', { ascending: false })
-    setOrders(data ?? [])
+
+    if (error) {
+      console.warn('Failed to load orders:', error.message)
+      setOrders([])
+    } else {
+      setOrders((data ?? []) as Order[])
+    }
+
     setLoading(false)
   }, [])
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
   const updateStatus = async (id: string, status: Order['status']) => {
+    if (!isSupabaseConfigured) {
+      const updatedOrders = getDemoOrders().map((order) =>
+        order.id === id ? { ...order, status } : order
+      )
+      saveDemoOrders(updatedOrders)
+      setOrders(updatedOrders)
+      return null
+    }
+
     const { error } = await supabase
       .from('orders')
       .update({ status })
       .eq('id', id)
-    if (!error) await fetchAll()
-    return error
+    if (error) return error.message
+
+    await fetchAll()
+    return null
   }
 
   return { orders, loading, updateStatus, refetch: fetchAll }

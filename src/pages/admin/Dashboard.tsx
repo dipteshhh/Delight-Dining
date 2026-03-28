@@ -3,24 +3,33 @@ import { useAuth } from '../../context/AuthContext'
 import { useAdminReservations } from '../../hooks/useReservations'
 import { useAdminOrders } from '../../hooks/useOrders'
 import { useAdminMenu } from '../../hooks/useMenu'
+import { useAdminCatering } from '../../hooks/useCatering'
+import { isSupabaseConfigured } from '../../lib/supabase'
 
 export default function Dashboard() {
   const { signOut } = useAuth()
   const { reservations } = useAdminReservations()
   const { orders } = useAdminOrders()
   const { items: menuItems } = useAdminMenu()
+  const { inquiries } = useAdminCatering()
 
   const today = new Date().toISOString().split('T')[0]
   const todayReservations = reservations.filter((r) => r.date === today)
   const pendingOrders = orders.filter((o) => o.status === 'pending' || o.status === 'preparing')
-  const totalRevenue = orders
-    .filter((o) => o.status === 'completed')
-    .reduce((sum, o) => sum + o.total, 0)
+  const newCateringLeads = inquiries.filter((inquiry) => inquiry.status === 'new')
 
   return (
     <div className="admin-layout">
       <div className="admin-header">
-        <h1>Admin Dashboard</h1>
+        <div>
+          <span className="section-label">Operations Center</span>
+          <h1>Admin Dashboard</h1>
+          <p className="admin-subtitle">
+            {isSupabaseConfigured
+              ? 'Connected to live Supabase data.'
+              : 'Running in local demo mode with persistent browser storage.'}
+          </p>
+        </div>
         <button className="btn btn-outline admin-signout" onClick={signOut}>Sign Out</button>
       </div>
 
@@ -34,12 +43,12 @@ export default function Dashboard() {
           <div className="admin-stat-label">Active Orders</div>
         </div>
         <div className="admin-stat-card">
-          <div className="admin-stat-number">{menuItems.length}</div>
-          <div className="admin-stat-label">Menu Items</div>
+          <div className="admin-stat-number">{newCateringLeads.length}</div>
+          <div className="admin-stat-label">New Catering Leads</div>
         </div>
         <div className="admin-stat-card">
-          <div className="admin-stat-number">${totalRevenue.toFixed(0)}</div>
-          <div className="admin-stat-label">Total Revenue</div>
+          <div className="admin-stat-number">{menuItems.filter((item) => item.available).length}</div>
+          <div className="admin-stat-label">Live Menu Items</div>
         </div>
       </div>
 
@@ -53,6 +62,11 @@ export default function Dashboard() {
           <span className="admin-nav-icon">📅</span>
           <h3>Reservations</h3>
           <p>View and manage upcoming table reservations.</p>
+        </Link>
+        <Link to="/admin/catering" className="admin-nav-card">
+          <span className="admin-nav-icon">🥂</span>
+          <h3>Catering Leads</h3>
+          <p>Track inquiries, outreach, and quote follow-up for events.</p>
         </Link>
         <Link to="/admin/orders" className="admin-nav-card">
           <span className="admin-nav-icon">📦</span>

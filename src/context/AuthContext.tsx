@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { getDemoAdminSession, saveDemoAdminSession } from '../lib/demoStore'
 import type { Session } from '@supabase/supabase-js'
 
 interface AuthContextValue {
@@ -11,13 +12,17 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
+const DEMO_ADMIN_EMAIL = 'admin@delightdining.com'
+const DEMO_ADMIN_PASSWORD = 'delight-demo'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
+  const [isDemoAdmin, setIsDemoAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
+      setIsDemoAdmin(getDemoAdminSession())
       setLoading(false)
       return
     }
@@ -36,19 +41,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string): Promise<string | null> => {
     if (!isSupabaseConfigured) {
-      return 'Supabase is not configured. Add your credentials to .env'
+      const normalizedEmail = email.trim().toLowerCase()
+      const isValidDemoLogin =
+        normalizedEmail === DEMO_ADMIN_EMAIL && password === DEMO_ADMIN_PASSWORD
+
+      if (!isValidDemoLogin) {
+        return `Use ${DEMO_ADMIN_EMAIL} / ${DEMO_ADMIN_PASSWORD} in demo mode.`
+      }
+
+      saveDemoAdminSession(true)
+      setIsDemoAdmin(true)
+      return null
     }
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     return error?.message ?? null
   }
 
   const signOut = async () => {
+    if (!isSupabaseConfigured) {
+      saveDemoAdminSession(false)
+      setIsDemoAdmin(false)
+      return
+    }
+
     await supabase.auth.signOut()
     setSession(null)
   }
 
   return (
-    <AuthContext.Provider value={{ session, loading, signIn, signOut, isAdmin: !!session }}>
+    <AuthContext.Provider
+      value={{
+        session,
+        loading,
+        signIn,
+        signOut,
+        isAdmin: isSupabaseConfigured ? !!session : isDemoAdmin,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

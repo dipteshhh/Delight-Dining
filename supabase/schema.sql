@@ -33,6 +33,21 @@ create table if not exists reservations (
   created_at timestamptz default now()
 );
 
+-- Catering Inquiries
+create table if not exists catering_inquiries (
+  id uuid default gen_random_uuid() primary key,
+  package_name text not null,
+  service_type text not null check (service_type in ('pickup', 'delivery', 'full-service')),
+  guest_count integer not null check (guest_count >= 10),
+  event_date date not null,
+  contact_name text not null,
+  contact_email text not null,
+  contact_phone text not null,
+  notes text,
+  status text default 'new' check (status in ('new', 'contacted', 'quoted', 'closed')),
+  created_at timestamptz default now()
+);
+
 -- Orders
 create table if not exists orders (
   id uuid default gen_random_uuid() primary key,
@@ -62,6 +77,7 @@ create table if not exists order_items (
 
 alter table menu_items enable row level security;
 alter table reservations enable row level security;
+alter table catering_inquiries enable row level security;
 alter table orders enable row level security;
 alter table order_items enable row level security;
 
@@ -83,6 +99,16 @@ create policy "Anyone can create a reservation"
 -- Reservations: authenticated users (admin) can view/update/delete
 create policy "Admin full access to reservations"
   on reservations for all
+  using (auth.role() = 'authenticated');
+
+-- Catering inquiries: anyone can insert
+create policy "Anyone can create a catering inquiry"
+  on catering_inquiries for insert
+  with check (true);
+
+-- Catering inquiries: authenticated users (admin) can view/update/delete
+create policy "Admin full access to catering inquiries"
+  on catering_inquiries for all
   using (auth.role() = 'authenticated');
 
 -- Orders: anyone can insert
@@ -114,6 +140,91 @@ create policy "Anyone can view order items"
 create policy "Admin full access to order items"
   on order_items for all
   using (auth.role() = 'authenticated');
+
+-- ============================================
+-- Reservation Booking Function
+-- Ensures slot capacity is enforced atomically
+-- ============================================
+
+create or replace function public.book_reservation(
+  p_first_name text,
+  p_last_name text,
+  p_email text,
+  p_phone text,
+  p_date date,
+  p_time text,
+  p_guests integer,
+  p_special_requests text default null
+)
+returns reservations
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_count integer;
+  inserted_reservation reservations;
+begin
+  perform pg_advisory_xact_lock(hashtext(p_date::text || ':' || p_time));
+
+  select count(*)
+  into current_count
+  from reservations
+  where date = p_date
+    and time = p_time
+    and status <> 'cancelled';
+
+  if current_count >= 8 then
+    raise exception 'This reservation slot is fully booked'
+      using errcode = 'P0001';
+  end if;
+
+  insert into reservations (
+    first_name,
+    last_name,
+    email,
+    phone,
+    date,
+    time,
+    guests,
+    special_requests
+  )
+  values (
+    p_first_name,
+    p_last_name,
+    p_email,
+    p_phone,
+    p_date,
+    p_time,
+    p_guests,
+    p_special_requests
+  )
+  returning *
+  into inserted_reservation;
+
+  return inserted_reservation;
+end;
+$$;
+
+grant execute on function public.book_reservation(
+  text,
+  text,
+  text,
+  text,
+  date,
+  text,
+  integer,
+  text
+) to anon, authenticated;
+
+create index if not exists reservations_date_time_idx
+  on reservations (date, time);
+
+create index if not exists catering_event_date_idx
+  on catering_inquiries (event_date);
+
+create index if not exists menu_items_sort_order_idx
+  on menu_items (sort_order);
 
 -- ============================================
 -- Seed Data — Menu Items

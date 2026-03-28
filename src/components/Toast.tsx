@@ -1,47 +1,79 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 
-type ToastType = 'success' | 'error' | 'info'
+type ToastTone = 'success' | 'error' | 'info'
 
-interface Toast {
-  id: number
+interface ToastItem {
+  id: string
   message: string
-  type: ToastType
+  tone: ToastTone
 }
 
 interface ToastContextValue {
-  addToast: (message: string, type?: ToastType) => void
+  addToast: (message: string, tone?: ToastTone) => void
 }
 
-const ToastContext = createContext<ToastContextValue>({ addToast: () => {} })
+const ToastContext = createContext<ToastContextValue | null>(null)
 
-let nextId = 0
+const TOAST_ICONS: Record<ToastTone, string> = {
+  error: '!',
+  info: 'i',
+  success: '✓',
+}
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([])
+  const [toasts, setToasts] = useState<ToastItem[]>([])
+  const timeoutsRef = useRef<Map<string, number>>(new Map())
 
-  const addToast = useCallback((message: string, type: ToastType = 'info') => {
-    const id = nextId++
-    setToasts((prev) => [...prev, { id, message, type }])
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, 4000)
-  }, [])
+  const removeToast = (id: string) => {
+    const timeoutId = timeoutsRef.current.get(id)
+    if (timeoutId) {
+      window.clearTimeout(timeoutId)
+      timeoutsRef.current.delete(id)
+    }
 
-  const dismiss = (id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
+    setToasts((currentToasts) =>
+      currentToasts.filter((toast) => toast.id !== id)
+    )
   }
 
+  const value = useMemo<ToastContextValue>(
+    () => ({
+      addToast: (message, tone = 'info') => {
+        const id = crypto.randomUUID()
+        setToasts((currentToasts) => [...currentToasts, { id, message, tone }])
+
+        const timeoutId = window.setTimeout(() => removeToast(id), 3600)
+        timeoutsRef.current.set(id, timeoutId)
+      },
+    }),
+    []
+  )
+
   return (
-    <ToastContext.Provider value={{ addToast }}>
+    <ToastContext.Provider value={value}>
       {children}
-      <div className="toast-container" role="status" aria-live="polite">
-        {toasts.map((t) => (
-          <div key={t.id} className={`toast toast-${t.type}`}>
-            <span className="toast-icon">
-              {t.type === 'success' ? '✓' : t.type === 'error' ? '✕' : 'ℹ'}
+      <div className="toast-container" aria-live="polite" aria-atomic="true">
+        {toasts.map((toast) => (
+          <div className={`toast toast-${toast.tone}`} key={toast.id} role="status">
+            <span className="toast-icon" aria-hidden="true">
+              {TOAST_ICONS[toast.tone]}
             </span>
-            <span className="toast-message">{t.message}</span>
-            <button className="toast-dismiss" onClick={() => dismiss(t.id)} aria-label="Dismiss">✕</button>
+            <p className="toast-message">{toast.message}</p>
+            <button
+              aria-label="Dismiss notification"
+              className="toast-dismiss"
+              onClick={() => removeToast(toast.id)}
+              type="button"
+            >
+              ✕
+            </button>
           </div>
         ))}
       </div>
@@ -50,5 +82,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 export function useToast() {
-  return useContext(ToastContext)
+  const context = useContext(ToastContext)
+  if (!context) throw new Error('useToast must be used within ToastProvider')
+  return context
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
-import type { MenuItem, MenuCategory } from '../types'
+import { getDemoMenuItems, saveDemoMenuItems } from '../lib/demoStore'
+import type { MenuItem, MenuCategory, MenuItemInput } from '../types'
 import { CATEGORY_ICONS, CATEGORY_ORDER } from '../types'
 import { FALLBACK_MENU } from '../data/fallbackMenu'
 
@@ -53,32 +54,85 @@ export function useAdminMenu() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
+
+    if (!isSupabaseConfigured) {
+      setItems(getDemoMenuItems())
+      setLoading(false)
+      return
+    }
+
+    const { data, error } = await supabase
       .from('menu_items')
       .select('*')
       .order('sort_order')
-    setItems(data ?? [])
+
+    if (error) {
+      console.warn('Failed to load menu items:', error.message)
+      setItems([])
+    } else {
+      setItems((data ?? []) as MenuItem[])
+    }
+
     setLoading(false)
   }, [])
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  const createItem = async (item: Omit<MenuItem, 'id' | 'created_at'>) => {
+  const createItem = async (item: MenuItemInput): Promise<string | null> => {
+    if (!isSupabaseConfigured) {
+      const nextItem: MenuItem = {
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        ...item,
+      }
+      const nextItems = [...getDemoMenuItems(), nextItem].sort(
+        (a, b) => a.sort_order - b.sort_order
+      )
+      saveDemoMenuItems(nextItems)
+      setItems(nextItems)
+      return null
+    }
+
     const { error } = await supabase.from('menu_items').insert(item)
-    if (!error) await fetchAll()
-    return error
+    if (error) return error.message
+
+    await fetchAll()
+    return null
   }
 
-  const updateItem = async (id: string, updates: Partial<MenuItem>) => {
+  const updateItem = async (
+    id: string,
+    updates: Partial<MenuItemInput>
+  ): Promise<string | null> => {
+    if (!isSupabaseConfigured) {
+      const nextItems = getDemoMenuItems().map((item) =>
+        item.id === id ? { ...item, ...updates } : item
+      )
+      saveDemoMenuItems(nextItems)
+      setItems(nextItems)
+      return null
+    }
+
     const { error } = await supabase.from('menu_items').update(updates).eq('id', id)
-    if (!error) await fetchAll()
-    return error
+    if (error) return error.message
+
+    await fetchAll()
+    return null
   }
 
-  const deleteItem = async (id: string) => {
+  const deleteItem = async (id: string): Promise<string | null> => {
+    if (!isSupabaseConfigured) {
+      const nextItems = getDemoMenuItems().filter((item) => item.id !== id)
+      saveDemoMenuItems(nextItems)
+      setItems(nextItems)
+      return null
+    }
+
     const { error } = await supabase.from('menu_items').delete().eq('id', id)
-    if (!error) await fetchAll()
-    return error
+    if (error) return error.message
+
+    await fetchAll()
+    return null
   }
 
   const toggleAvailability = async (id: string, available: boolean) => {

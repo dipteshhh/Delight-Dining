@@ -3,11 +3,12 @@ import { useMenu } from '../hooks/useMenu'
 import { useCart } from '../context/CartContext'
 import { useToast } from '../components/Toast'
 import LoadingSkeleton from '../components/LoadingSkeleton'
+import EmptyState from '../components/EmptyState'
 import type { MenuItem } from '../types'
 
 export default function Menu() {
-  const { categories, loading } = useMenu()
-  const { addItem } = useCart()
+  const { categories, loading, error } = useMenu()
+  const { addItem, totalItems } = useCart()
   const { addToast } = useToast()
 
   const handleAddToCart = (item: MenuItem) => {
@@ -30,8 +31,23 @@ export default function Menu() {
 
       <section className="menu-section">
         <div className="container">
+          {error && (
+            <div className="form-info-banner" style={{ marginBottom: 24 }}>
+              Live menu data could not be loaded. Showing fallback menu items instead.
+            </div>
+          )}
+
+          {totalItems > 0 && (
+            <div className="menu-quick-actions">
+              <p>{totalItems} item{totalItems > 1 ? 's are' : ' is'} in your cart.</p>
+              <Link className="btn btn-dark" to="/checkout">Go to Checkout</Link>
+            </div>
+          )}
+
           {loading ? (
             <LoadingSkeleton type="menu" count={6} />
+          ) : categories.length === 0 ? (
+            <EmptyState message="No menu items are available right now." />
           ) : (
             categories.map((cat) => (
               <div className="menu-category animate-fade-up" key={cat.title}>
@@ -75,8 +91,10 @@ export default function Menu() {
         <div className="container">
           <span className="section-label" style={{ color: 'rgba(255,255,255,0.7)' }}>Hungry Yet?</span>
           <h2>Ready to Order?</h2>
-          <p>Book your table or order for pickup — your feast awaits.</p>
-          <Link to="/reservations" className="btn btn-primary">Reserve a Table</Link>
+          <p>Book your table or head straight to checkout with your cart.</p>
+          <Link to={totalItems > 0 ? '/checkout' : '/reservations'} className="btn btn-primary">
+            {totalItems > 0 ? 'Checkout Now' : 'Reserve a Table'}
+          </Link>
         </div>
       </section>
     </>

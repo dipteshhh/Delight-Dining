@@ -37,7 +37,9 @@ export default function Header() {
             <NavLink to="/menu" onClick={closeMenu}>Menu</NavLink>
             <NavLink to="/reservations" onClick={closeMenu}>Reservations</NavLink>
             <NavLink to="/catering" onClick={closeMenu}>Catering</NavLink>
-            {isAdmin && <NavLink to="/admin" onClick={closeMenu}>Admin</NavLink>}
+            <NavLink to="/admin" onClick={closeMenu}>
+              {isAdmin ? 'Dashboard' : 'Admin'}
+            </NavLink>
             <NavLink to="/reservations" className="nav-cta" onClick={closeMenu}>
               Book a Table
             </NavLink>

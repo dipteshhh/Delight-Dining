@@ -17,6 +17,7 @@ import Dashboard from './pages/admin/Dashboard'
 import MenuManager from './pages/admin/MenuManager'
 import ReservationManager from './pages/admin/ReservationManager'
 import OrderManager from './pages/admin/OrderManager'
+import CateringManager from './pages/admin/CateringManager'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -50,6 +51,7 @@ function AppLayout() {
           <Route path="/admin" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/menu" element={<ProtectedRoute><MenuManager /></ProtectedRoute>} />
           <Route path="/admin/reservations" element={<ProtectedRoute><ReservationManager /></ProtectedRoute>} />
+          <Route path="/admin/catering" element={<ProtectedRoute><CateringManager /></ProtectedRoute>} />
           <Route path="/admin/orders" element={<ProtectedRoute><OrderManager /></ProtectedRoute>} />
         </Routes>
       </main>

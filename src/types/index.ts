@@ -26,6 +26,20 @@ export interface Reservation {
   created_at: string
 }
 
+export interface CateringInquiry {
+  id: string
+  package_name: string
+  service_type: 'pickup' | 'delivery' | 'full-service'
+  guest_count: number
+  event_date: string
+  contact_name: string
+  contact_email: string
+  contact_phone: string
+  notes: string | null
+  status: 'new' | 'contacted' | 'quoted' | 'closed'
+  created_at: string
+}
+
 export interface Order {
   id: string
   customer_name: string
@@ -53,7 +67,11 @@ export interface CartItem {
   quantity: number
 }
 
+export type MenuItemInput = Omit<MenuItem, 'id' | 'created_at'>
+
 export type ReservationInsert = Omit<Reservation, 'id' | 'status' | 'created_at'>
+
+export type CateringInquiryInsert = Omit<CateringInquiry, 'id' | 'status' | 'created_at'>
 
 export type OrderInsert = Omit<Order, 'id' | 'status' | 'created_at' | 'order_items'>
 
@@ -77,4 +95,10 @@ export const CATEGORY_ORDER = [
   'Main Courses',
   'Desserts',
   'Beverages',
+]
+
+export const CATERING_SERVICE_OPTIONS: Array<CateringInquiry['service_type']> = [
+  'pickup',
+  'delivery',
+  'full-service',
 ]

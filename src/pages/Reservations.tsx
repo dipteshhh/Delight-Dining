@@ -1,5 +1,8 @@
-import { type FormEvent, useState } from 'react'
-import { useReservations } from '../hooks/useReservations'
+import { type FormEvent, useEffect, useState } from 'react'
+import {
+  MAX_RESERVATIONS_PER_SLOT,
+  useReservations,
+} from '../hooks/useReservations'
 import { useToast } from '../components/Toast'
 
 const timeSlots = [
@@ -30,9 +33,40 @@ interface FormErrors {
 export default function Reservations() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [loadingAvailability, setLoadingAvailability] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
-  const { createReservation, checkAvailability } = useReservations()
+  const [selectedDate, setSelectedDate] = useState('')
+  const [selectedTime, setSelectedTime] = useState('')
+  const [availabilityByTime, setAvailabilityByTime] = useState<Record<string, number>>({})
+  const { createReservation, checkAvailability, getAvailabilityForDate } = useReservations()
   const { addToast } = useToast()
+
+  useEffect(() => {
+    let isCancelled = false
+
+    if (!selectedDate) {
+      setAvailabilityByTime({})
+      return
+    }
+
+    setLoadingAvailability(true)
+
+    void getAvailabilityForDate(selectedDate)
+      .then((availability) => {
+        if (!isCancelled) {
+          setAvailabilityByTime(availability)
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setLoadingAvailability(false)
+        }
+      })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [selectedDate])
 
   const validate = (form: FormData): FormErrors => {
     const errs: FormErrors = {}
@@ -93,12 +127,15 @@ export default function Reservations() {
     setSubmitting(false)
 
     if (error) {
-      addToast('Something went wrong. Please try again.', 'error')
+      addToast(error, 'error')
       return
     }
 
     setSubmitted(true)
     e.currentTarget.reset()
+    setSelectedDate('')
+    setSelectedTime('')
+    setAvailabilityByTime({})
     const timeLabel = timeSlots.find((t) => t.value === time)?.label ?? time
     addToast(`Reservation confirmed for ${date} at ${timeLabel}!`, 'success')
   }
@@ -186,19 +223,68 @@ export default function Reservations() {
                     <label htmlFor="date">Date</label>
                     <input type="date" id="date" name="date" min={getTodayString()} required
                       className={errors.date ? 'input-error' : ''}
-                      onChange={() => setErrors((e) => { const n = { ...e }; delete n.date; return n })} />
+                      onChange={(event) => {
+                        setSelectedDate(event.target.value)
+                        setSelectedTime('')
+                        setErrors((e) => { const n = { ...e }; delete n.date; return n })
+                      }} />
                     {errors.date && <span className="field-error">{errors.date}</span>}
                   </div>
                   <div className="form-group">
                     <label htmlFor="time">Time</label>
-                    <select id="time" name="time" required defaultValue=""
+                    <select id="time" name="time" required
                       className={errors.time ? 'input-error' : ''}
-                      onChange={() => setErrors((e) => { const n = { ...e }; delete n.time; return n })}>
+                      disabled={!selectedDate || loadingAvailability}
+                      value={selectedTime}
+                      onChange={(event) => {
+                        setSelectedTime(event.target.value)
+                        setErrors((e) => { const n = { ...e }; delete n.time; return n })
+                      }}>
                       <option value="" disabled>Select a time</option>
-                      {timeSlots.map((slot) => (
-                        <option key={slot.value} value={slot.value}>{slot.label}</option>
-                      ))}
+                      {timeSlots.map((slot) => {
+                        const currentCount = availabilityByTime[slot.value] ?? 0
+                        const isFull = currentCount >= MAX_RESERVATIONS_PER_SLOT
+
+                        return (
+                          <option disabled={isFull} key={slot.value} value={slot.value}>
+                            {slot.label}{isFull ? ' · Fully booked' : ''}
+                          </option>
+                        )
+                      })}
                     </select>
+                    {!selectedDate && (
+                      <span className="field-hint">
+                        Pick a date first to see live availability.
+                      </span>
+                    )}
+                    {loadingAvailability && (
+                      <span className="field-hint">Checking live availability...</span>
+                    )}
+                    {selectedDate && !loadingAvailability && (
+                      <div className="slot-summary-grid">
+                        {timeSlots.map((slot) => {
+                          const currentCount = availabilityByTime[slot.value] ?? 0
+                          const remaining = Math.max(
+                            MAX_RESERVATIONS_PER_SLOT - currentCount,
+                            0
+                          )
+
+                          return (
+                            <div
+                              className={`slot-pill${remaining === 0 ? ' full' : ''}${
+                                selectedTime === slot.value ? ' selected' : ''
+                              }`}
+                              key={slot.value}
+                            >
+                              <span>{slot.label}</span>
+                              <strong>
+                                {remaining === 0 ? 'Full' : `${remaining} left`}
+                              </strong>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                     {errors.time && <span className="field-error">{errors.time}</span>}
                   </div>
                 </div>
