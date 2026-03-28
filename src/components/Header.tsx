@@ -16,6 +16,16 @@ export default function Header() {
     closeMenu()
   }, [pathname])
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+
+    document.body.classList.toggle('mobile-menu-open', menuOpen)
+
+    return () => {
+      document.body.classList.remove('mobile-menu-open')
+    }
+  }, [menuOpen])
+
   return (
     <>
       <header className="site-header">
