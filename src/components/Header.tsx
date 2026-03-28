@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { NavLink, Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import CartIcon from './CartIcon'
 import Cart from './Cart'
@@ -8,8 +8,27 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const { isAdmin } = useAuth()
+  const { pathname } = useLocation()
 
   const closeMenu = () => setMenuOpen(false)
+
+  useEffect(() => {
+    closeMenu()
+  }, [pathname])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+
+    const previousOverflow = document.body.style.overflow
+
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [menuOpen])
 
   return (
     <>
@@ -24,15 +43,20 @@ export default function Header() {
             <CartIcon onClick={() => setCartOpen(true)} />
 
             <button
-              className="menu-toggle"
+              className={`menu-toggle${menuOpen ? ' active' : ''}`}
               aria-label="Toggle menu"
+              aria-expanded={menuOpen}
+              aria-controls="site-navigation"
               onClick={() => setMenuOpen((prev) => !prev)}
             >
               <span /><span /><span />
             </button>
           </div>
 
-          <nav className={`nav-links${menuOpen ? ' open' : ''}`}>
+          <nav
+            className={`nav-links${menuOpen ? ' open' : ''}`}
+            id="site-navigation"
+          >
             <NavLink to="/" onClick={closeMenu}>Home</NavLink>
             <NavLink to="/menu" onClick={closeMenu}>Menu</NavLink>
             <NavLink to="/reservations" onClick={closeMenu}>Reservations</NavLink>
@@ -46,6 +70,7 @@ export default function Header() {
           </nav>
         </div>
       </header>
+      {menuOpen && <button className="mobile-nav-backdrop" onClick={closeMenu} type="button" aria-label="Close menu" />}
       <Cart isOpen={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   )
