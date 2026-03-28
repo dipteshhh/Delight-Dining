@@ -16,20 +16,6 @@ export default function Header() {
     closeMenu()
   }, [pathname])
 
-  useEffect(() => {
-    if (typeof document === 'undefined') return
-
-    const previousOverflow = document.body.style.overflow
-
-    if (menuOpen) {
-      document.body.style.overflow = 'hidden'
-    }
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-    }
-  }, [menuOpen])
-
   return (
     <>
       <header className="site-header">

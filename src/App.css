@@ -1442,28 +1442,31 @@ input, textarea, select {
   .nav-links {
     display: none;
     position: fixed;
-    top: 76px;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 88px;
+    left: 12px;
+    right: 12px;
+    bottom: auto;
     background: #171726;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    gap: 12px;
-    padding: 20px 16px 32px;
-    overflow-y: auto;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.28);
     z-index: 1100;
   }
 
   .nav-links a {
     width: 100%;
-    font-size: 1.02rem;
-    padding: 16px 18px;
+    font-size: 0.98rem;
+    line-height: 1.2;
+    padding: 14px 16px;
     color: rgba(255,255,255,0.96);
     background: #24243a;
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
+    border-radius: 14px;
     box-shadow: none;
   }
 
@@ -1480,10 +1483,10 @@ input, textarea, select {
   .nav-cta {
     width: 100%;
     justify-content: center;
-    margin: 6px 0 0;
-    padding: 17px 18px !important;
+    margin: 2px 0 0;
+    padding: 16px !important;
     background: linear-gradient(135deg, var(--clr-accent), var(--clr-accent-light)) !important;
-    border-radius: 18px !important;
+    border-radius: 14px !important;
     color: var(--clr-dark) !important;
     box-shadow: 0 10px 24px rgba(201, 169, 110, 0.18);
   }
@@ -1510,7 +1513,13 @@ input, textarea, select {
   }
 
   .mobile-nav-backdrop {
-    display: none;
+    display: block;
+    position: fixed;
+    inset: 76px 0 0;
+    background: rgba(11, 10, 20, 0.28);
+    z-index: 1050;
+    border: none;
+    padding: 0;
   }
 
   .hero h1 {
